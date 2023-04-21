@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">[COM1786-CW2] Project 2</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="add_image_url_link">Add url here</string>
+    <string name="previous">Previous</string>
+    <string name="next">Next</string>
+    <string name="take_picture">Take picture</string>
+</resources>
