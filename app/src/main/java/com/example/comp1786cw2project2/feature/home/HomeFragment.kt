@@ -45,9 +45,9 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                 override fun onInput(text: String) {
                     val url = text
                     if (URLUtil.isValidUrl(url)) {
-                        viewModel.addUrl(url)
+                        viewModel.storeImageToLocalDatabase(url)
                     } else {
-                        Toast.makeText(requireContext(), "Invalid url!", Toast.LENGTH_SHORT).show()
+                        Log.d("TAG", "Invalid url!")
                     }
                 }
             })
@@ -78,12 +78,12 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == 1 && resultCode == Activity.RESULT_OK) {
             val imageBitmap = data?.extras?.get("data") as Bitmap
-            saveImage(imageBitmap)
+            saveThisImageToDatabase(imageBitmap)
         }
     }
 
-    private fun saveImage(bitmap: Bitmap) {
-        val displayName = "my_picture.jpg"
+    private fun saveThisImageToDatabase(bitmap: Bitmap) {
+        val displayName = "picture_saved.jpg"
         val mimeType = "image/jpeg"
         val collection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
         val values = ContentValues().apply {
@@ -98,13 +98,12 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         }
 
         imageUri?.let {
-            val filePath: String = getRealPathImage(it)
-            viewModel.addUrl(filePath)
+            val filePath: String = pathImage(it)
+            viewModel.storeImageToLocalDatabase(filePath)
         }
     }
 
-    private fun initViewModel() = with(viewModel) {
-        getCurrentUrl(0)
+    private fun observeData() = with(viewModel) {
         currentUrl.observe(viewLifecycleOwner) {
             if (it.url.isNotEmpty() && URLUtil.isValidUrl(it.url)) {
                 Glide
@@ -114,17 +113,25 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                     .error(R.drawable.error)
                     .into(viewBinding.imvShowImage)
             } else {
-                val file = File(it.url)
-                if (file.exists()) {
-                    val bitmap = BitmapFactory.decodeFile(file.absolutePath)
+                val finalFile = File(it.url)
+                if (finalFile.exists()) {
+                    val bitmap = BitmapFactory.decodeFile(finalFile.absolutePath)
                     viewBinding.imvShowImage.setImageBitmap(bitmap)
-                    Log.d("alo123", "onActivityResult: ")
                 }
             }
         }
     }
 
-    private fun getRealPathImage(uri: Uri): String {
+    private fun initViewModel() = with(viewModel) {
+        getData()
+        observeData()
+    }
+
+    private fun getData() = with(viewModel) {
+        getCurrentUrlImageFromDatabase(0)
+    }
+
+    private fun pathImage(uri: Uri): String {
         arrayOf(MediaStore.Images.Media.DATA)
         val cursor = requireContext().contentResolver.query(uri, arrayOf(MediaStore.Images.Media.DATA), null, null, null)
         val columnIndex = cursor!!.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)

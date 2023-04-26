@@ -11,44 +11,44 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val urlDao: UrlDao
+    private val urlDaoDatabase: UrlDao
 ) : BaseViewModel() {
     private var _currentUrl: MutableLiveData<Url> = MutableLiveData()
     var currentUrl : LiveData<Url> = _currentUrl
     private var currentIndex = 0
 
-    fun addUrl(url: String) {
-        urlDao.addUrl(Url(url = url))
-        val currentListUrl = urlDao.getListUrl()
+    fun storeImageToLocalDatabase(url: String) {
+        urlDaoDatabase.addUrl(Url(url = url))
+        val currentListUrl = urlDaoDatabase.getListUrl()
         currentIndex = currentListUrl.size - 1
         _currentUrl.value = Url(url = url)
     }
 
-    fun getCurrentUrl(index: Int) {
-        val currentListUrl = urlDao.getListUrl()
-        val range = currentListUrl.indices
-        if (currentListUrl.isNotEmpty() && index in range) {
-            _currentUrl.value = currentListUrl[index]
+    fun getCurrentUrlImageFromDatabase(index: Int) {
+        val listUrlImageFromDb = urlDaoDatabase.getListUrl()
+        val range = listUrlImageFromDb.indices
+        if (listUrlImageFromDb.isNotEmpty() && index in range) {
+            _currentUrl.value = listUrlImageFromDb[index]
         }
     }
 
     fun onPreviousClicked() {
-        val currentListUrl = urlDao.getListUrl()
+        val currentListUrl = urlDaoDatabase.getListUrl()
         val range = currentListUrl.indices
         currentIndex--
         if (currentListUrl.isNotEmpty() && currentIndex in range) {
-            getCurrentUrl(currentIndex)
+            getCurrentUrlImageFromDatabase(currentIndex)
         } else {
             currentIndex++
         }
     }
 
     fun onNextClicked() {
-        val currentListUrl = urlDao.getListUrl()
+        val currentListUrl = urlDaoDatabase.getListUrl()
         val range = currentListUrl.indices
         currentIndex++
         if (currentListUrl.isNotEmpty() && currentIndex in range) {
-            getCurrentUrl(currentIndex)
+            getCurrentUrlImageFromDatabase(currentIndex)
         } else {
             currentIndex--
         }
